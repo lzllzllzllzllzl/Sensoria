@@ -9,7 +9,10 @@ function getPool() {
   }
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
+    connectionTimeoutMillis: 20000,
+    idleTimeoutMillis: 30000,
+    max: 5
   });
   pool.on('error', err => {
     console.error('数据库连接池错误:', err.message);

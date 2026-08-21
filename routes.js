@@ -140,8 +140,7 @@ async function handleAuthRegister(req, res) {
     const library = Array.isArray(body.library) ? body.library : [];
     const history = Array.isArray(body.history) ? body.history : [];
     if (library.length > 0) {
-      for (const it of library.slice(0, 50)) {
-        await query(
+      await Promise.all(library.slice(0, 50).map(it => query(
           `INSERT INTO user_library (user_id, name, mode, prompt, result, fp)
            VALUES ($1, $2, $3, $4, $5, $6)`,
           [
@@ -152,12 +151,10 @@ async function handleAuthRegister(req, res) {
             JSON.stringify(it.result || {}),
             JSON.stringify(it.fp || [128, 128, 128])
           ]
-        );
-      }
+        )));
     }
     if (history.length > 0) {
-      for (const it of history.slice(0, 50)) {
-        await query(
+      await Promise.all(history.slice(0, 50).map(it => query(
           `INSERT INTO user_history (user_id, name, mode, result)
            VALUES ($1, $2, $3, $4)`,
           [
@@ -166,8 +163,7 @@ async function handleAuthRegister(req, res) {
             it.mode === 'person' ? 'person' : 'product',
             JSON.stringify(it.result || {})
           ]
-        );
-      }
+        )));
     }
 
     const cloud = await fetchCloudData(user);
