@@ -1,0 +1,1248 @@
+/* ============================================================
+   EDITORIAL DESIGN SYSTEM — 美妆助手无障碍版
+   杂志感 · 高对比度 · 无障碍优先
+   ============================================================ */
+
+:root {
+  --gold: #C8A45C;
+  --gold-light: #E8D49B;
+  --gold-dark: #9A7B3A;
+  --ink: #1A1A1A;
+  --ink-soft: #3A3A3A;
+  --cream: #FAF7F2;
+  --cream-dark: #F0EBE3;
+  --white: #FFFFFF;
+  --success: #2E7D32;
+  --success-bg: #E8F5E9;
+  --danger: #C62828;
+  --danger-bg: #FEE2E2;
+  --text: var(--ink);
+  --text-soft: #5C5C5C;
+  --bg: var(--cream);
+  --surface: var(--white);
+  --border: #D4C9B8;
+}
+
+/* 语音模式（深色主题） */
+body.voice-mode {
+  --text: #FFFFFF;
+  --text-soft: #B0B0B0;
+  --bg: #0A0A0A;
+  --surface: #1C1C1C;
+  --border: #333333;
+  --success-bg: #1B3A1B;
+  --danger-bg: #3A1B1B;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Inter', -apple-system, "PingFang SC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+  transition: background 0.3s, color 0.3s;
+}
+
+h1, h2, .display {
+  font-family: 'Noto Serif SC', 'Georgia', serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ============================================================
+   页面系统
+   ============================================================ */
+.screen {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 0 24px 40px;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* ============================================================
+   顶部导航条
+   ============================================================ */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0 10px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 30px;
+}
+
+.nav-bar .brand {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+}
+
+.nav-bar .back-btn {
+  font-size: 0.95rem;
+  color: var(--text-soft);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 0;
+  font-family: inherit;
+}
+
+/* ============================================================
+   模式切换
+   ============================================================ */
+.mode-toggle {
+  display: flex;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+
+.mode-toggle button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  background: transparent;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-soft);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.mode-toggle button.active {
+  background: var(--gold);
+  color: var(--white);
+}
+
+.mode-toggle button .icon {
+  font-size: 1.1rem;
+}
+
+.mode-desc {
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   主标题区
+   ============================================================ */
+.hero {
+  text-align: center;
+  padding: 30px 0 20px;
+}
+
+.hero .overline {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.hero h1 {
+  font-size: 2.6rem;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+
+.hero .tagline {
+  font-size: 1.05rem;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+/* ============================================================
+   详细描述段落
+   ============================================================ */
+.intro-text {
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 0.95rem;
+  line-height: 1.8;
+  margin-bottom: 30px;
+  padding: 0 10px;
+}
+
+/* ============================================================
+   主操作按钮
+   ============================================================ */
+.primary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 88px;
+  padding: 20px 24px;
+  border: 2px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.action-btn:active {
+  transform: scale(0.98);
+  border-color: var(--gold);
+}
+
+.action-btn .icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--gold-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.action-btn .text-wrap { flex: 1; }
+
+.action-btn .title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.action-btn .subtitle {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   分割线
+   ============================================================ */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 30px 0 24px;
+}
+
+.section-divider::before,
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.section-divider span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   智能判断模块
+   ============================================================ */
+.judgment-section {
+  margin-bottom: 30px;
+}
+
+/* 判断命题展示 */
+.prompt-box {
+  background: var(--surface);
+  border-left: 5px solid var(--success);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.prompt-box .label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--success);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.prompt-box .text {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* 上传区 */
+.upload-area {
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+
+.upload-area.has-image {
+  border-color: var(--success);
+  border-style: solid;
+}
+
+.upload-area .thumb {
+  max-width: 300px;
+  max-height: 200px;
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  display: none;
+  object-fit: cover;
+}
+
+.upload-area .thumb.show {
+  display: inline-block;
+}
+
+.upload-area .status {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.upload-area .status.uploaded {
+  color: var(--success);
+}
+
+/* 隐藏原生 file input */
+#file-input {
+  display: none;
+}
+
+/* 按钮行 */
+.btn-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.btn-row .btn-primary,
+.btn-row .btn-secondary {
+  flex: 1;
+  margin: 0;
+}
+
+/* 判断按钮 */
+.btn-judge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  padding: 16px 32px;
+  background: var(--gold);
+  color: var(--white);
+  border: none;
+  border-radius: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 8px 0;
+  transition: all 0.15s;
+}
+
+.btn-judge:active {
+  transform: scale(0.97);
+  background: var(--gold-dark);
+}
+
+.btn-judge:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 结果卡片 */
+.result-display {
+  display: none;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  margin: 20px 0;
+  animation: fadeIn 0.4s ease;
+}
+
+.result-display.show {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.result-display .verdict {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 2rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.result-display .verdict.yes {
+  color: var(--success);
+}
+
+.result-display .verdict.no {
+  color: var(--danger);
+}
+
+.result-display .confidence-bar {
+  margin-bottom: 20px;
+}
+
+.result-display .confidence-bar .label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.result-display .confidence-bar .bar-bg {
+  height: 12px;
+  background: var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.result-display .confidence-bar .bar-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 6px;
+  transition: width 0.8s ease;
+}
+
+.result-display .confidence-bar .bar-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-align: right;
+  margin-top: 6px;
+}
+
+.result-display .reason-box {
+  background: var(--cream);
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+body.voice-mode .result-display .reason-box {
+  background: #2A2A2A;
+}
+
+.result-display .reason-box .label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* 重新播报按钮 */
+.btn-replay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 12px 24px;
+  background: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 12px 0;
+  transition: all 0.15s;
+}
+
+.btn-replay:active {
+  border-color: var(--gold);
+}
+
+/* ============================================================
+   摄像头页面
+   ============================================================ */
+.camera-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: #000;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+#video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#canvas { display: none; }
+
+.viewfinder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  border: 2px solid var(--gold-light);
+  border-radius: 50%;
+}
+
+.viewfinder::before,
+.viewfinder::after {
+  content: '';
+  position: absolute;
+  background: var(--gold-light);
+}
+
+.viewfinder::before {
+  width: 1px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.viewfinder::after {
+  width: 16px;
+  height: 1px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.camera-stage .guide-text {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  color: #FFF;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.camera-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #888;
+  font-size: 1rem;
+}
+
+.swatch-strip {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding: 4px 0 12px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.swatch {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--border);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.swatch:active { transform: scale(1.15); }
+.swatch.active { box-shadow: 0 0 0 3px var(--gold); }
+
+/* ============================================================
+   结果卡片（拍照识别用）
+   ============================================================ */
+.result-section { margin-bottom: 30px; }
+
+.result-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  padding: 28px;
+  margin-bottom: 20px;
+}
+
+.result-card .product-name {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  line-height: 1.3;
+}
+
+.result-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.result-row .swatch-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+}
+
+.result-row .info { flex: 1; }
+
+.result-row .label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.result-row .value {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.result-desc {
+  font-size: 1rem;
+  color: var(--text-soft);
+  line-height: 1.7;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   问答页
+   ============================================================ */
+.mic-button {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: none;
+  margin: 30px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(200, 164, 92, 0.4);
+  transition: transform 0.15s;
+}
+
+.mic-button:active { transform: scale(0.92); }
+
+.mic-button.listening {
+  background: var(--danger);
+  animation: mic-pulse 1.2s infinite;
+}
+
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(198, 40, 40, 0.3); }
+  50% { box-shadow: 0 8px 48px rgba(198, 40, 40, 0.7); }
+}
+
+.mic-button svg {
+  width: 56px;
+  height: 56px;
+  fill: var(--white);
+}
+
+.voice-status {
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 20px 0;
+  min-height: 30px;
+  color: var(--gold);
+}
+
+.quick-questions { margin-bottom: 30px; }
+
+.quick-questions .label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip {
+  padding: 12px 20px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 100px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chip:active {
+  background: var(--gold-light);
+  border-color: var(--gold);
+}
+
+.answer-card {
+  background: var(--surface);
+  border: 2px solid var(--gold);
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 30px;
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+/* ============================================================
+   历史 / 美妆库 列表
+   ============================================================ */
+.history-list, .library-list { margin-bottom: 30px; }
+
+.history-card, .library-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.history-card:active, .library-card:active { border-color: var(--gold); }
+
+.history-card .top-row, .library-card .top-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.history-card .dot, .library-card .dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
+
+.history-card .name, .library-card .name {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.history-card .meta, .library-card .meta {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+
+.history-card .time, .library-card .time {
+  font-size: 0.75rem;
+  color: var(--text-soft);
+  margin-top: 6px;
+  opacity: 0.7;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-soft);
+}
+
+.empty-state .icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.empty-state p { font-size: 1rem; }
+
+/* ============================================================
+   按钮组件
+   ============================================================ */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  padding: 16px 32px;
+  background: var(--gold);
+  color: var(--white);
+  border: none;
+  border-radius: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin: 8px 0;
+  transition: all 0.15s;
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+  background: var(--gold-dark);
+}
+
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  padding: 16px 32px;
+  background: var(--surface);
+  color: var(--text);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 8px 0;
+  transition: all 0.15s;
+}
+
+.btn-secondary:active { border-color: var(--gold); }
+
+/* ============================================================
+   状态栏
+   ============================================================ */
+.status-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 20px;
+  background: var(--gold);
+  color: var(--white);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  display: none;
+  z-index: 1000;
+}
+
+.status-bar.show {
+  display: block;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+/* ============================================================
+   语音模式特殊处理
+   ============================================================ */
+body.voice-mode .camera-placeholder { display: none; }
+body.voice-mode .swatch-strip { display: none; }
+body.voice-mode .nav-bar { border-color: #333; }
+
+/* ============================================================
+   底部辅助文字
+   ============================================================ */
+.footer-hint {
+  margin-top: auto;
+  padding: 30px 0 0;
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 0.85rem;
+}
+
+.footer-hint .dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  margin: 0 8px;
+  vertical-align: middle;
+}
+
+/* ============================================================
+   ★ 新增功能样式
+   ============================================================ */
+
+/* P1：大号上传按钮（相机/相册） */
+.btn-upload-big {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 96px;
+  padding: 22px;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  color: var(--white);
+  border: none;
+  border-radius: 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  cursor: pointer;
+  margin: 8px 0 14px;
+  box-shadow: 0 10px 28px rgba(200, 164, 92, 0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-upload-big:active {
+  transform: scale(0.97);
+  box-shadow: 0 6px 18px rgba(200, 164, 92, 0.3);
+}
+.btn-upload-big .cam-icon { font-size: 2rem; line-height: 1; }
+.btn-upload-big .sub { font-size: 0.8rem; font-weight: 600; opacity: 0.9; }
+
+/* 缓存徽章（来自美妆库·秒出） */
+.cache-badge {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1.5px solid var(--success);
+  border-radius: 100px;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin: 0 0 16px;
+}
+.cache-badge.show { display: inline-flex; }
+body.voice-mode .cache-badge { border-color: #3A7A3A; }
+
+/* P5：美妆垂直语义卡片 */
+.beauty-card {
+  background: var(--cream);
+  border-radius: 14px;
+  padding: 18px;
+  margin: 16px 0;
+}
+body.voice-mode .beauty-card { background: #242424; }
+
+.beauty-card .bc-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.beauty-row {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.beauty-row:last-child { border-bottom: none; }
+
+.beauty-row .b-label {
+  flex: 0 0 76px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-soft);
+}
+.beauty-row .b-value {
+  flex: 1;
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.55;
+}
+.beauty-row .b-value .chip-color {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+/* P7：全流程延伸按钮组 */
+.flow-actions {
+  display: flex;
+  gap: 10px;
+  margin: 18px 0 6px;
+}
+.flow-actions .flow-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 72px;
+  padding: 12px 6px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.flow-actions .flow-btn .fb-icon { font-size: 1.5rem; }
+.flow-actions .flow-btn:active { border-color: var(--gold); transform: scale(0.97); }
+.flow-actions .flow-btn.saved { border-color: var(--success); color: var(--success); }
+
+/* P7：推荐搭配 / 上妆指引 输出卡 */
+.extra-card {
+  display: none;
+  background: var(--surface);
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  padding: 20px;
+  margin: 14px 0;
+  animation: fadeIn 0.35s ease;
+}
+.extra-card.show { display: block; }
+
+.extra-card .ec-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.extra-card ul { list-style: none; }
+.extra-card li {
+  position: relative;
+  padding: 8px 0 8px 24px;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  border-bottom: 1px dashed var(--border);
+}
+.extra-card li:last-child { border-bottom: none; }
+.extra-card li::before {
+  content: '✦';
+  position: absolute;
+  left: 0;
+  color: var(--gold);
+  font-size: 0.9rem;
+}
+
+/* 美妆库专用：保存成功提示 */
+.saved-toast {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--success);
+  padding: 10px;
+  margin-top: 6px;
+}
+.library-count {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-soft);
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   ★ 双模式切换（看产品 / 看人）
+   ============================================================ */
+.mode2-hint {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.mode2-toggle {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.mode2-btn {
+  flex: 1;
+  min-height: 98px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 8px;
+  border: 2px solid var(--border);
+  border-radius: 18px;
+  background: #ECEAE5;            /* 未选中：灰色 */
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+
+.mode2-btn .m2-icon { font-size: 1.8rem; line-height: 1; }
+.mode2-btn .m2-title { font-size: 1.05rem; font-weight: 800; }
+.mode2-btn .m2-sub { font-size: 0.75rem; opacity: 0.85; }
+
+.mode2-btn.active {
+  background: var(--success);     /* 选中：绿色 */
+  border-color: var(--success);
+  color: #fff;
+}
+
+.mode2-btn:active { transform: scale(0.97); }
+
+body.voice-mode .mode2-btn {
+  background: #2A2A2A;
+  color: #AAA;
+  border-color: #333;
+}
+body.voice-mode .mode2-btn.active {
+  background: var(--success);
+  color: #fff;
+  border-color: var(--success);
+}
+
+/* ===== 判断命题：预设角度下拉 + 自定义输入 ===== */
+.judge-question {
+  background: var(--surface);
+  border-left: 5px solid var(--gold);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+.judge-question .label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.preset-select {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 1rem;
+  font-family: 'Inter', 'PingFang SC', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+.custom-prompt {
+  width: 100%;
+  min-height: 66px;
+  padding: 14px 16px;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-family: 'Inter', 'PingFang SC', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  resize: vertical;
+}
+.preset-select:focus,
+.custom-prompt:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+/* 自定义命题结论（非 yes/no）的中性样式 */
+.result-display .verdict.neutral {
+  color: var(--gold-dark);
+}
+
+/* 命题来源标识：下拉预设 vs 用户手填 */
+.prompt-source-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 14px 0 8px;
+}
+.prompt-source-row .label {
+  margin-bottom: 0;
+}
+.prompt-source {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+.prompt-source.preset {
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: var(--success);
+}
+.prompt-source.custom {
+  background: var(--gold-light);
+  color: var(--gold-dark);
+  border-color: var(--gold);
+}
+.prompt-hint {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  margin-top: 8px;
+  line-height: 1.45;
+}

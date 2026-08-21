@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>美妆助手 · Beauty AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="voice-mode">
+
+<div id="status-bar" class="status-bar"></div>
+
+<!-- ==================== 主页 ==================== -->
+<div id="home" class="screen active">
+  <div class="nav-bar">
+    <span class="brand">BEAUTY AI</span>
+  </div>
+
+  <!-- 原有内容（保留） -->
+  <div class="hero">
+    <p class="overline">无障碍美妆助手</p>
+    <h1>你的<br>智能美妆伴侣</h1>
+    <p class="tagline">拍一拍，听一听<br>让每个人都能享受美妆的乐趣</p>
+  </div>
+
+  <p class="intro-text">
+    BEAUTY AI是一款主打无障碍体验的智能美妆助手，定位为"智能美妆伴侣"，核心功能通过"拍一拍，听一听"的交互设计实现，旨在让每个人都能享受美妆乐趣。当前产品处于语音模式，支持全程语音引导操作，操作方式保持简洁特性。该产品以技术赋能美妆场景，通过语音交互降低使用门槛，覆盖不同需求的用户群体，强化美妆过程的便捷性与包容性。
+  </p>
+
+  <!-- 模式切换 -->
+  <div class="mode-toggle">
+    <button class="active" onclick="setMode('voice')" id="mode-voice">
+      <span class="icon">🎙</span> 语音模式
+    </button>
+    <button onclick="setMode('touch')" id="mode-touch">
+      <span class="icon">👆</span> 触控模式
+    </button>
+  </div>
+  <p class="mode-desc" id="mode-desc">
+    当前为语音模式：全程语音引导，简洁操作
+  </p>
+
+  <div class="primary-actions">
+    <button class="action-btn" onclick="goTo('camera')">
+      <div class="icon-wrap">📷</div>
+      <div class="text-wrap">
+        <div class="title">拍产品</div>
+        <div class="subtitle">拍照识别口红颜色</div>
+      </div>
+    </button>
+
+    <button class="action-btn" onclick="goTo('question')">
+      <div class="icon-wrap">💬</div>
+      <div class="text-wrap">
+        <div class="title">问问题</div>
+        <div class="subtitle">语音提问，语音回答</div>
+      </div>
+    </button>
+
+    <button class="action-btn" onclick="goTo('library')">
+      <div class="icon-wrap">💄</div>
+      <div class="text-wrap">
+        <div class="title">我的美妆库</div>
+        <div class="subtitle">已保存的产品，同款秒出</div>
+      </div>
+    </button>
+
+    <button class="action-btn" onclick="goTo('history')">
+      <div class="icon-wrap">📋</div>
+      <div class="text-wrap">
+        <div class="title">历史记录</div>
+        <div class="subtitle">查看之前的识别结果</div>
+      </div>
+    </button>
+  </div>
+
+  <!-- ========== 智能判断模块（MVP 核心闭环） ========== -->
+  <div class="section-divider">
+    <span>智能判断</span>
+  </div>
+
+  <div class="judgment-section">
+    <!-- 双模式切换：看产品 / 看人 -->
+    <div class="mode2-hint">选择识别模式</div>
+    <div class="mode2-toggle">
+      <button class="mode2-btn active" id="mode-product" onclick="setJudgeMode('product')">
+        <span class="m2-icon">💄</span>
+        <span class="m2-title">拍产品</span>
+        <span class="m2-sub">识别色号 / 质地</span>
+      </button>
+      <button class="mode2-btn" id="mode-person" onclick="setJudgeMode('person')">
+        <span class="m2-icon">🧑</span>
+        <span class="m2-title">拍自己</span>
+        <span class="m2-sub">分析肤质 / 脸型</span>
+      </button>
+    </div>
+
+    <!-- 判断命题：预设角度下拉 + 自定义输入 -->
+    <div class="judge-question">
+      <!-- ① 下拉：预设角度（可选） -->
+      <div class="label" id="preset-label">① 选择预设判断角度（可选）</div>
+      <select id="preset-select" class="preset-select" onchange="onPresetChange()"></select>
+
+      <!-- ② 当前生效的命题：来自预设 还是 你自己手填 -->
+      <div class="prompt-source-row">
+        <span class="label" id="prompt-input-label">② 判断命题（即被提问的问题）</span>
+        <span class="prompt-source" id="prompt-source">📋 预设问题</span>
+      </div>
+      <textarea id="custom-prompt" class="custom-prompt" rows="2"
+                placeholder="也可以直接在这里写你自己的判断命题，例如：这支适合约会涂吗？"
+                oninput="onPromptInput()"></textarea>
+      <div class="prompt-hint">⬇️ 选上面的预设会自动带入此框；想问点别的，直接在框里改字或重新输入即可。</div>
+    </div>
+
+    <!-- P1：大号上传按钮（唤起相机或相册） -->
+    <button class="btn-upload-big" onclick="document.getElementById('file-input').click()">
+      <span class="cam-icon">📷</span>
+      <span>上传图片</span>
+      <span class="sub">点击唤起相机或相册</span>
+    </button>
+
+    <!-- 图片预览区 -->
+    <div class="upload-area" id="upload-area">
+      <img id="thumb" class="thumb" alt="预览">
+      <div class="status" id="upload-status">📷 点击下方按钮上传口红照片</div>
+    </div>
+    <input type="file" id="file-input" accept="image/*">
+
+    <!-- 辅助：示例图片 -->
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="loadExampleImage()">
+        🖼️ 用示例图片试一下
+      </button>
+    </div>
+
+    <!-- 缓存命中徽章（P6） -->
+    <div class="cache-badge" id="cache-badge"></div>
+
+    <!-- 开始判断按钮 -->
+    <button class="btn-judge" id="btn-judge" onclick="startJudgment()">
+      🔍 开始判断
+    </button>
+
+    <!-- P2+P5：结果展示区 -->
+    <div class="result-display" id="result-display">
+      <!-- 结论 -->
+      <div class="verdict" id="verdict">--</div>
+
+      <!-- 置信度 -->
+      <div class="confidence-bar">
+        <div class="label">置信度</div>
+        <div class="bar-bg">
+          <div class="bar-fill" id="bar-fill"></div>
+        </div>
+        <div class="bar-value" id="bar-value">--</div>
+      </div>
+
+      <!-- P5：美妆顾问卡片（动态行，按模式渲染） -->
+      <div class="beauty-card">
+        <div class="bc-title">💡 <span id="bc-title-text">美妆顾问解读</span></div>
+        <div id="beauty-rows"></div>
+      </div>
+
+      <!-- 口语化理由 -->
+      <div class="reason-box">
+        <div class="label">判断理由</div>
+        <div id="reason-text">--</div>
+      </div>
+
+      <!-- P3：重新播报 -->
+      <button class="btn-replay" id="btn-replay" onclick="replayJudgment()" style="display:none;">
+        🔊 重新播报
+      </button>
+
+      <!-- P7：全流程延伸按钮组 -->
+      <div class="flow-actions">
+        <button class="flow-btn" id="btn-save" onclick="saveToLibrary()">
+          <span class="fb-icon">💾</span>
+          <span class="fb-text">保存产品</span>
+        </button>
+        <button class="flow-btn" id="btn-pairing" onclick="showPairing()">
+          <span class="fb-icon">💄</span>
+          <span>推荐搭配</span>
+        </button>
+        <button class="flow-btn" id="btn-guide" onclick="showGuide()">
+          <span class="fb-icon">📖</span>
+          <span>上妆指引</span>
+        </button>
+      </div>
+
+      <!-- P7：推荐搭配卡 -->
+      <div class="extra-card" id="extra-pairing">
+        <div class="ec-title">💄 推荐搭配</div>
+        <ul id="pairing-list"></ul>
+      </div>
+
+      <!-- P7：上妆指引卡 -->
+      <div class="extra-card" id="extra-guide">
+        <div class="ec-title">📖 上妆指引</div>
+        <ul id="guide-list"></ul>
+      </div>
+
+      <div class="saved-toast" id="saved-toast" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div class="footer-hint">
+    打开音量 · 享受语音播报 <span class="dot"></span> 由 DeepSeek Vision 实时判断
+  </div>
+</div>
+
+<!-- ==================== 拍照页 ==================== -->
+<div id="camera" class="screen">
+  <div class="nav-bar">
+    <span class="brand">BEAUTY AI</span>
+    <button class="back-btn" onclick="goTo('home')">← 返回</button>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column;">
+    <div class="hero" style="padding-top: 0;">
+      <h1 style="font-size: 2rem;">拍产品</h1>
+      <p class="tagline" id="camera-hint">将口红对准取景框中心</p>
+    </div>
+
+    <div class="camera-stage">
+      <video id="video" autoplay playsinline></video>
+      <canvas id="canvas"></canvas>
+      <div class="viewfinder"></div>
+      <div class="guide-text" id="guide-text">对准中心，轻触拍照</div>
+      <div class="camera-placeholder" id="camera-placeholder">
+        <p>📷</p>
+        <p style="margin-top: 8px;">正在启动摄像头...</p>
+      </div>
+    </div>
+
+    <div class="swatch-strip" id="swatch-strip"></div>
+
+    <button class="btn-primary" onclick="captureAndAnalyze()">轻触此处拍照识别</button>
+    <button class="btn-secondary" onclick="goTo('home')">返回主页</button>
+  </div>
+</div>
+
+<!-- ==================== 结果页 ==================== -->
+<div id="result" class="screen">
+  <div class="nav-bar">
+    <span class="brand">BEAUTY AI</span>
+    <button class="back-btn" onclick="goTo('home')">← 主页</button>
+  </div>
+
+  <div class="hero" style="padding-bottom: 20px;">
+    <p class="overline">识别完成</p>
+    <h1 style="font-size: 1.8rem;">为你找到了</h1>
+  </div>
+
+  <div class="result-section">
+    <div class="result-card">
+      <div class="product-name" id="res-name">--</div>
+
+      <div class="result-row">
+        <div class="swatch-dot" id="res-dot"></div>
+        <div class="info">
+          <div class="label">颜色</div>
+          <div class="value" id="res-color">--</div>
+        </div>
+      </div>
+
+      <div class="result-row">
+        <div class="info">
+          <div class="label">色号</div>
+          <div class="value" id="res-shade">--</div>
+        </div>
+      </div>
+
+      <div class="result-row">
+        <div class="info">
+          <div class="label">质地</div>
+          <div class="value" id="res-texture">--</div>
+        </div>
+      </div>
+
+      <div class="result-desc" id="res-desc">--</div>
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="replayResult()">🔊 再听一遍</button>
+  <button class="btn-secondary" onclick="goTo('camera')">📷 再拍一个</button>
+</div>
+
+<!-- ==================== 问答页 ==================== -->
+<div id="question" class="screen">
+  <div class="nav-bar">
+    <span class="brand">BEAUTY AI</span>
+    <button class="back-btn" onclick="goTo('home')">← 返回</button>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column;">
+    <div class="hero" style="padding-top: 0;">
+      <h1 style="font-size: 2rem;">问问题</h1>
+      <p class="tagline">按住麦克风，说出你的问题</p>
+    </div>
+
+    <button class="mic-button" id="mic-btn"
+            onpointerdown="startListening()"
+            onpointerup="stopListening()"
+            onpointerleave="stopListening()">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+      </svg>
+    </button>
+
+    <div class="voice-status" id="voice-status">按住麦克风开始说话...</div>
+
+    <div class="quick-questions">
+      <div class="label">或者点击快捷问题</div>
+      <div class="chip-grid">
+        <button class="chip" onclick="askQuestion('这是什么颜色？')">什么颜色？</button>
+        <button class="chip" onclick="askQuestion('适合什么肤质？')">适合什么肤质？</button>
+        <button class="chip" onclick="askQuestion('这个颜色显白吗？')">显白吗？</button>
+        <button class="chip" onclick="askQuestion('这是什么质地？')">什么质地？</button>
+      </div>
+    </div>
+
+    <div id="answer-area" style="display:none;">
+      <div class="answer-card" id="answer-text"></div>
+    </div>
+
+    <div style="margin-top: auto;">
+      <button class="btn-secondary" onclick="goTo('home')">返回主页</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 美妆库页（P6） ==================== -->
+<div id="library" class="screen">
+  <div class="nav-bar">
+    <span class="brand">BEAUTY AI</span>
+    <button class="back-btn" onclick="goTo('home')">← 返回</button>
+  </div>
+
+  <div class="hero" style="padding-top: 0;">
+    <h1 style="font-size: 2rem;">我的美妆库</h1>
+    <p class="tagline">保存过的产品都在这里<br>同款再次上传即秒出结果</p>
+  </div>
+
+  <div class="library-count" id="library-count"></div>
+  <div class="library-list" id="library-list"></div>
+
+  <div class="empty-state" id="library-empty">
+    <div class="icon">💄</div>
+    <p>美妆库还是空的<br>去上传一张口红照片并保存吧</p>
+  </div>
+
+  <button class="btn-secondary" onclick="clearLibrary()" style="margin-top: 16px;">🗑️ 清空美妆库</button>
+  <button class="btn-secondary" onclick="goTo('home')" style="margin-top: 12px;">返回主页</button>
+</div>
+
+<!-- ==================== 历史页 ==================== -->
+<div id="history" class="screen">
+  <div class="nav-bar">
+    <span class="brand">BEAUTY AI</span>
+    <button class="back-btn" onclick="goTo('home')">← 返回</button>
+  </div>
+
+  <div class="hero" style="padding-top: 0;">
+    <h1 style="font-size: 2rem;">历史记录</h1>
+    <p class="tagline">点击任意记录重新听结果</p>
+  </div>
+
+  <div class="history-list" id="history-list"></div>
+
+  <div class="empty-state" id="history-empty">
+    <div class="icon">📋</div>
+    <p>还没有识别记录<br>快去拍一个产品吧</div>
+  </div>
+
+  <button class="btn-secondary" onclick="goTo('home')" style="margin-top:auto;">返回主页</button>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

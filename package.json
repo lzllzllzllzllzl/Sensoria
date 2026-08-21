@@ -1,0 +1,9 @@
+{
+  "name": "beauty-ai-assistant",
+  "version": "1.0.0",
+  "private": true,
+  "description": "美妆无障碍助手 · 接入 DeepSeek Vision（Files API + file_id）",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
