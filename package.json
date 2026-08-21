@@ -5,5 +5,8 @@
   "description": "美妆无障碍助手 · 接入 DeepSeek Vision（Files API + file_id）",
   "scripts": {
     "start": "node server.js"
+  },
+  "dependencies": {
+    "pg": "^8.23.0"
   }
 }

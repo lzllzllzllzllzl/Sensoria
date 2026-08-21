@@ -29,6 +29,10 @@ let lastJudgmentMode = 'product';      // 最近一次结果的模式（用于�
 let judgePromptSource = 'preset';      // 'preset' 来自下拉预设 | 'custom' 来自用户手填
 
 const LIB_KEY = "beauty_ai_library_v1";
+const HIST_KEY = "beauty_ai_history_v1";
+const GUEST_KEY = "beauty_ai_guest_uid";
+
+let accountUser = null;                 // null = 游客；否则为 { id, email, phone }
 
 // ==================== 模式切换 ====================
 function setMode(mode) {
@@ -101,6 +105,255 @@ function goTo(screenId) {
   if (screenId === 'home') {
     setTimeout(() => speak('已返回主页。'), 200);
   }
+}
+
+// ==================== 账号 / 云端同步 ====================
+function getGuestUid() {
+  let uid = localStorage.getItem(GUEST_KEY);
+  if (!uid) {
+    uid = 'guest-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    localStorage.setItem(GUEST_KEY, uid);
+  }
+  return uid;
+}
+
+function refreshAccountChip() {
+  const chip = document.getElementById('account-chip');
+  if (chip) {
+    chip.textContent = accountUser ? '👤 已登录 · 退出' : '👤 登录';
+    chip.title = accountUser ? (accountLabel() + '，点击退出登录') : '点击登录 / 注册';
+  }
+}
+
+function accountLabel() {
+  if (accountUser) {
+    return accountUser.email || accountUser.phone || ('用户 ' + accountUser.id);
+  }
+  return '游客模式';
+}
+
+function apiJson(path, options) {
+  const headers = Object.assign({ 'Content-Type': 'application/json' }, options && options.headers || {});
+  if (!accountUser) headers['X-Guest-Uid'] = getGuestUid();
+  return fetch(path, Object.assign({}, options, {
+    credentials: 'same-origin',
+    headers: headers
+  })).then(async resp => {
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(data.error || ('HTTP ' + resp.status));
+    return data;
+  });
+}
+
+function normalizeLibraryItem(it) {
+  return {
+    id: it.id || null,
+    name: it.name || '未命名',
+    mode: it.mode === 'person' ? 'person' : 'product',
+    prompt: it.prompt || '',
+    result: it.result || {},
+    fp: it.fp || [128, 128, 128],
+    savedAt: it.savedAt || new Date().toLocaleString('zh-CN')
+  };
+}
+
+function normalizeHistoryItem(it) {
+  const isJudgment = !!(it.result && typeof it.result === 'object' && (it.result.judgment || it.result.colorDesc));
+  return {
+    id: it.id || null,
+    name: it.name || '',
+    mode: it.mode || 'product',
+    result: isJudgment ? it.result : null,
+    time: it.viewedAt || it.time || new Date().toLocaleString('zh-CN'),
+    shade: it.shade || '',
+    colorName: it.colorName || '',
+    texture: it.texture || '',
+    desc: it.desc || '',
+    viewedAt: it.viewedAt || null
+  };
+}
+
+function itemDedupKey(it) {
+  const r = it.result || {};
+  const sig = r.judgment || r.shadeName || r.colorDesc || r.faceShape || '';
+  return [it.name || '', it.mode || 'product', sig].join('|');
+}
+
+function loadLocalHistory() {
+  try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch (e) { return []; }
+}
+
+function saveLocalHistory(list) {
+  try { localStorage.setItem(HIST_KEY, JSON.stringify(list.slice(0, 50))); } catch (e) {}
+}
+
+function loadHistoryState() {
+  const stored = loadLocalHistory();
+  if (stored.length > 0 && history.length === 0) {
+    history = stored.map(normalizeHistoryItem);
+  }
+}
+
+function mergeById(localList, cloudList, idKey) {
+  const seen = {};
+  const merged = [];
+  for (const it of cloudList || []) {
+    if (it[idKey] && !seen[it[idKey]]) {
+      seen[it[idKey]] = true;
+      merged.push(it);
+    }
+  }
+  for (const it of localList || []) {
+    const k = it[idKey] || itemDedupKey(it);
+    if (!seen[k]) {
+      seen[k] = true;
+      merged.push(it);
+    }
+  }
+  return merged;
+}
+
+function applyCloudData(data) {
+  if (!data) return;
+  const localLib = (loadLibrary() || []).map(normalizeLibraryItem);
+  const cloudLib = (data.library || []).map(normalizeLibraryItem);
+  saveLibrary(mergeById(localLib, cloudLib, itemDedupKey).map(normalizeLibraryItem));
+
+  loadHistoryState();
+  const localHist = history.map(normalizeHistoryItem);
+  const cloudHist = (data.history || []).map(normalizeHistoryItem);
+  history = mergeById(localHist, cloudHist, itemDedupKey).slice(0, 50);
+  saveLocalHistory(history);
+}
+
+async function initAccount() {
+  try {
+    const data = await apiJson('/api/me', { headers: {} });
+    accountUser = data.user;
+    applyCloudData(data);
+  } catch (e) {
+    accountUser = null;
+    loadHistoryState();
+  }
+  refreshAccountChip();
+}
+
+function openAuthModal() {
+  document.getElementById('auth-overlay').classList.add('show');
+  switchAuthTab(accountUser ? 'login' : 'register');
+  document.getElementById('auth-error').textContent = '';
+}
+
+function closeAuthModal() {
+  document.getElementById('auth-overlay').classList.remove('show');
+}
+
+function switchAuthTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('tab-login').classList.toggle('active', isLogin);
+  document.getElementById('tab-register').classList.toggle('active', !isLogin);
+  document.getElementById('auth-submit').textContent = isLogin ? '登录' : '注册';
+  document.getElementById('auth-password').autocomplete = isLogin ? 'current-password' : 'new-password';
+  document.getElementById('auth-error').textContent = '';
+}
+
+async function submitAuth(evt) {
+  evt.preventDefault();
+  const account = document.getElementById('auth-account').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const isLogin = document.getElementById('tab-login').classList.contains('active');
+  const btn = document.getElementById('auth-submit');
+  btn.disabled = true;
+  btn.textContent = isLogin ? '登录中…' : '注册中…';
+  document.getElementById('auth-error').textContent = '';
+
+  try {
+    const localLibBefore = (loadLibrary() || []).map(normalizeLibraryItem);
+    loadHistoryState();
+    const localHistBefore = history.map(normalizeHistoryItem);
+    const data = await apiJson(isLogin ? '/api/auth/login' : '/api/auth/register', {
+      method: 'POST',
+      headers: {},
+      body: JSON.stringify({
+        account,
+        password,
+        guestUid: getGuestUid(),
+        library: localLibBefore,
+        history: localHistBefore
+      })
+    });
+    accountUser = data.user;
+    applyCloudData(data);
+    pushMergedData(localLibBefore, localHistBefore, data);
+    closeAuthModal();
+    refreshAccountChip();
+    showStatus(isLogin ? '登录成功，已同步云端数据' : '注册成功，本地数据已迁移到云端');
+    speak(isLogin ? '登录成功，你的美妆库和历史记录已同步。' : '注册成功，本地数据已保存到云端。');
+  } catch (e) {
+    document.getElementById('auth-error').textContent = e.message || '操作失败';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = isLogin ? '登录' : '注册';
+  }
+}
+
+async function logoutAccount() {
+  if (!confirm('确定退出登录吗？本机仍会保留已同步的数据。')) return;
+  try { await apiJson('/api/auth/logout', { method: 'POST', headers: {} }); } catch (e) {}
+  accountUser = null;
+  localStorage.removeItem(GUEST_KEY);
+  refreshAccountChip();
+  showStatus('已退出登录，当前为游客模式');
+  speak('已退出登录，当前为游客模式，数据只保存在本机。');
+}
+
+async function syncLibraryItemToCloud(entry) {
+  if (!accountUser) return;
+  try {
+    await apiJson('/api/library', {
+      method: 'POST',
+      headers: {},
+      body: JSON.stringify({
+        name: entry.name,
+        mode: entry.mode,
+        prompt: entry.prompt,
+        result: entry.result,
+        fp: entry.fp
+      })
+    });
+  } catch (e) {
+    console.warn('美妆库云同步失败:', e);
+  }
+}
+
+async function syncHistoryItemToCloud(entry) {
+  try {
+    await apiJson('/api/history', {
+      method: 'POST',
+      headers: {},
+      body: JSON.stringify({
+        name: entry.name,
+        mode: entry.mode || 'product',
+        result: entry
+      })
+    });
+  } catch (e) {
+    console.warn('历史记录云同步失败:', e);
+  }
+}
+
+async function pushMergedData(localLibBefore, localHistBefore, cloudData) {
+  if (!accountUser) return;
+  const localLib = (localLibBefore || []).map(normalizeLibraryItem);
+  const localHist = (localHistBefore || []).map(normalizeHistoryItem);
+  const cloudLib = (cloudData && cloudData.library || []).map(normalizeLibraryItem);
+  const cloudHist = (cloudData && cloudData.history || []).map(normalizeHistoryItem);
+  const cloudLibKeys = new Set(cloudLib.map(itemDedupKey));
+  const cloudHistKeys = new Set(cloudHist.map(itemDedupKey));
+  await Promise.all([
+    ...localLib.slice(0, 20).filter(it => !cloudLibKeys.has(itemDedupKey(it))).map(it => syncLibraryItemToCloud(it)),
+    ...localHist.slice(0, 20).filter(it => !cloudHistKeys.has(itemDedupKey(it))).map(it => syncHistoryItemToCloud(it))
+  ]);
 }
 
 // ==================== 状态栏 ====================
@@ -222,13 +475,28 @@ function replayResult() {
 
 // ==================== 历史 ====================
 function addToHistory(p) {
-  history.unshift({ ...p, time: new Date().toLocaleString('zh-CN') });
-  if (history.length > 20) history.pop();
+  const isJudgment = !!(p && p.result && typeof p.result === 'object' && p.result.judgment);
+  const entry = isJudgment
+    ? normalizeHistoryItem(p)
+    : normalizeHistoryItem({
+        name: p.name,
+        mode: 'product',
+        time: new Date().toLocaleString('zh-CN'),
+        shade: p.shade,
+        colorName: p.colorName,
+        texture: p.texture,
+        desc: p.desc
+      });
+  history.unshift(entry);
+  if (history.length > 50) history.pop();
+  saveLocalHistory(history);
+  if (isJudgment) syncHistoryItemToCloud(entry);
 }
 
 function renderHistory() {
   const list = document.getElementById('history-list');
   const empty = document.getElementById('history-empty');
+  loadHistoryState();
   if (history.length === 0) {
     list.innerHTML = '';
     empty.style.display = 'block';
@@ -238,10 +506,12 @@ function renderHistory() {
   list.innerHTML = history.map((item, i) => `
     <div class="history-card" onclick="replayHistoryItem(${i})">
       <div class="top-row">
-        <div class="dot" style="background:${item.shade}"></div>
-        <div class="name">${item.name}</div>
+        <div class="dot" style="background:${item.result ? shadeFromColorDesc(item.result.colorDesc) : item.shade}"></div>
+        <div class="name">${item.name || '未命名'}</div>
       </div>
-      <div class="meta">${item.colorName} · ${item.texture}</div>
+      <div class="meta">${item.result
+        ? ((item.result.colorDesc || item.result.judgment) + ' · ' + (item.result.textureDesc || '—'))
+        : (item.colorName + ' · ' + item.texture)}</div>
       <div class="time">${item.time}</div>
     </div>
   `).join('');
@@ -250,9 +520,17 @@ function renderHistory() {
 function replayHistoryItem(i) {
   const item = history[i];
   if (item) {
-    currentResult = item;
-    speak(`${item.name}，${item.colorName}，${item.texture}质地。${item.desc}`);
-    vibrateTexture(getTextureKey(item.texture));
+    if (item.result) {
+      lastJudgmentResult = item.result;
+      lastJudgmentMode = item.mode || 'product';
+      item.result._prompt = item.prompt || item.result._prompt;
+      displayJudgmentResult(item.result, item.mode || 'product');
+      goTo('home');
+    } else {
+      currentResult = item;
+      speak(`${item.name}，${item.colorName}，${item.texture}质地。${item.desc}`);
+      vibrateTexture(getTextureKey(item.texture));
+    }
   }
 }
 
@@ -800,6 +1078,7 @@ function saveToLibrary() {
   if (exists >= 0) lib[exists] = entry;
   else lib.unshift(entry);
   saveLibrary(lib);
+  syncLibraryItemToCloud(entry);
 
   currentJudgmentSaved = true;
   const saveBtn = document.getElementById('btn-save');
@@ -901,7 +1180,7 @@ function renderLibrary() {
     const dot = isPerson ? '#7FB3A3' : shadeFromColorDesc(item.result.colorDesc);
     const meta = isPerson
       ? `${item.result.judgment} · 脸型${item.result.faceShape || '—'}`
-      : `${item.result.colorDesc || ''} · ${item.result.textureDesc || ''} · ${item.result.judgment === 'yes' ? '适合黄皮' : '不太适合'}`;
+      : `${item.result.colorDesc || item.colorName || ''} · ${item.result.textureDesc || item.texture || ''} · ${item.result.judgment === 'yes' ? '适合黄皮' : (item.result.judgment === 'no' ? '不太适合' : '已保存')}`;
     const tag = isPerson ? '🧑 看人' : '💄 看产品';
     return `
     <div class="library-card" onclick="loadLibraryItem(${i})">
@@ -933,8 +1212,15 @@ function loadLibraryItem(i) {
   hasUploadedImage = true;
   currentFingerprint = item.fp;
   lastJudgmentResult = item.result;
-  item.result._prompt = item.prompt || item.result._prompt;
-  displayJudgmentResult(item.result, item.mode || 'product');
+  if (item.result && item.result.judgment) {
+    item.result._prompt = item.prompt || item.result._prompt;
+    displayJudgmentResult(item.result, item.mode || 'product');
+  } else {
+    const p = item.result && item.result.name ? item.result : item;
+    currentResult = p;
+    showResult(p);
+    goTo('result');
+  }
   document.getElementById('home').scrollIntoView({ behavior: 'smooth' });
   speak('已为你打开美妆库中的：' + item.name);
 }
@@ -942,6 +1228,9 @@ function loadLibraryItem(i) {
 function clearLibrary() {
   if (!confirm('确定要清空「我的美妆库」吗？此操作不可恢复。')) return;
   localStorage.removeItem(LIB_KEY);
+  if (accountUser) {
+    apiJson('/api/library', { method: 'DELETE', headers: {} }).catch(() => {});
+  }
   renderLibrary();
   speak('美妆库已清空。');
 }
@@ -955,6 +1244,7 @@ window.onload = function() {
   initSpeechRecognition();
   initPrompt();
   bindFileInput();
+  initAccount();
 
   setMode('voice');
 

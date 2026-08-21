@@ -15,6 +15,25 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const { query } = require('./db');
+const {
+  handleAuthRegister,
+  handleAuthLogin,
+  handleAuthLogout,
+  handleMe,
+  handleLibrary,
+  handleHistory
+} = require('./routes');
+
+function routeAsync(handler) {
+  return (req, res, ...rest) => {
+    Promise.resolve(handler(req, res, ...rest)).catch(e => {
+      console.error('API 异常:', e);
+      sendJSON(res, 500, { error: '服务端异常' });
+    });
+  };
+}
 
 // ---------- 极简 .env 加载（无第三方依赖） ----------
 function loadEnv() {
@@ -149,6 +168,24 @@ async function handleJudge(req, res) {
         });
       }
 
+      // 图片指纹缓存：相同图片 + 模式 + 命题直接复用结果
+      const imageHash = crypto.createHash('sha256').update(buf).digest('hex').slice(0, 32);
+      const cacheKey = [imageHash, mode, prompt || ''].join('|');
+      try {
+        const cached = await query(
+          `SELECT result, source FROM judgment_results
+           WHERE image_hash = $1 AND mode = $2 AND prompt = $3
+           ORDER BY id DESC LIMIT 1`,
+          [imageHash, mode, prompt || '']
+        );
+        if (cached.rowCount > 0) {
+          const hit = cached.rows[0];
+          return sendJSON(res, 200, { ...hit.result, _cache: true, _source: hit.source });
+        }
+      } catch (dbErr) {
+        console.warn('判断缓存查询失败（继续走模型）:', dbErr.message);
+      }
+
       const ext = mime.split('/')[1] || 'png';
 
       // --- 步骤 1：Files API 上传，取得 file_id ---
@@ -213,6 +250,16 @@ async function handleJudge(req, res) {
       if (typeof parsed.confidence === 'string') parsed.confidence = parseFloat(parsed.confidence);
       if (typeof parsed.confidence !== 'number' || isNaN(parsed.confidence)) parsed.confidence = 0.8;
 
+      try {
+        await query(
+          `INSERT INTO judgment_results (image_hash, mode, prompt, result, source)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [imageHash, mode, prompt || '', parsed, 'deepseek']
+        );
+      } catch (dbErr) {
+        console.warn('判断结果缓存写入失败（不影响返回）:', dbErr.message);
+      }
+
       sendJSON(res, 200, parsed);
     } catch (e) {
       sendJSON(res, 500, { error: '服务端异常', detail: String(e && e.message || e) });
@@ -258,6 +305,26 @@ function serveStatic(req, res) {
 const server = http.createServer((req, res) => {
   if (req.method === 'POST' && req.url === '/api/judge') {
     return handleJudge(req, res);
+  }
+  if (req.method === 'POST' && req.url === '/api/auth/register') {
+    return routeAsync(handleAuthRegister)(req, res);
+  }
+  if (req.method === 'POST' && req.url === '/api/auth/login') {
+    return routeAsync(handleAuthLogin)(req, res);
+  }
+  if (req.method === 'POST' && req.url === '/api/auth/logout') {
+    return routeAsync(handleAuthLogout)(req, res);
+  }
+  if (req.method === 'GET' && req.url === '/api/me') {
+    return routeAsync(handleMe)(req, res);
+  }
+  if (req.method === 'GET' || req.method === 'POST' || req.method === 'DELETE') {
+    if (req.url === '/api/library' || req.url.startsWith('/api/library/')) {
+      return routeAsync(handleLibrary)(req, res, req.method);
+    }
+    if (req.url === '/api/history' || req.url.startsWith('/api/history/')) {
+      return routeAsync(handleHistory)(req, res, req.method);
+    }
   }
   if (req.method === 'GET' && req.url === '/api/health') {
     return sendJSON(res, 200, { ok: true, model: MODEL, hasKey: !!API_KEY });
